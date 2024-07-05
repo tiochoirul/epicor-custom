@@ -1,5 +1,7 @@
 # Customizations for Epicor
 
+![2](https://github.com/tiochoirul/epicor-custom/assets/108212568/a16d5e58-8ec5-45d3-bafd-17a65cb66eac)
+
 This repository contains customizations for Epicor, specifically designed to enhance the functionality related to subcontractor purchase order processing and inventory management.
 
 ## Technology Stack
