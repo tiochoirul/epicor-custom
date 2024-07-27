@@ -1,0 +1,20 @@
+//Call BAQ Report in Epicor Kinetic
+//PO Entry Form
+//App Open Tool
+View: Ice.UIRpt.UDTC_PrintPO
+Layer: LayerName
+Who Launched: Erp.UI.POEntry
+
+Value In:
+{
+	"options": {
+		"valueIn": "{POHeader.PONum}",
+		"contextValue": {
+			"Param1": "{POHeader.PONum}"
+		}
+	}
+}
+
+//BAQ Report Form
+//Event On Window Load
+"%session.context.initialValueIn.contextValue.Param1%"
