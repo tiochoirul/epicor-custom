@@ -9,6 +9,9 @@ try{
 //throw new Ice.BLException($"{rootFolderPath}");
   using (StreamReader reader = new StreamReader(rootFolderPath))
   {
+    //Hapus all UD01
+    this.ThisLib.deleteUD01(this.Session.CompanyID);
+    
     string delimiter = "";
     Ice.Tablesets.UD01Tableset DataSet = new Ice.Tablesets.UD01Tableset();
     while (!reader.EndOfStream){
@@ -25,8 +28,9 @@ try{
                 string poNum = dataSplit[1];
                 
                 DateTime poDate;
-                DateTime.TryParseExact(dataSplit[2], "dd-MMM-yyyy", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out poDate);
+                DateTime.TryParseExact(dataSplit[2], "dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out poDate);
                 
+                //throw new Ice.BLException("PO Date: " + poDate + " " + dataSplit[2]);
                 int TOP = Convert.ToInt32(dataSplit[8]);
                 string plantAHM = dataSplit[10];
                 string Curr = dataSplit[11];
@@ -36,7 +40,7 @@ try{
                 decimal ActPOQty = Convert.ToDecimal(dataSplit[20]);
                 
                 DateTime dlvDate;
-                DateTime.TryParseExact(dataSplit[21], "dd-MMM-yyyy", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out dlvDate);
+                DateTime.TryParseExact(dataSplit[21], "dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out dlvDate);
                 
                 decimal price = Convert.ToDecimal(dataSplit[22]);
                 decimal per = Convert.ToDecimal(dataSplit[23]);
@@ -49,12 +53,26 @@ try{
                 bool isExists = this.ThisLib.checkFromDb(poNum, partNum, poDate, plantAHM, poItem);
                 var part = Db.Part.Where(e => e.PartNum == partNum).FirstOrDefault();
                 
-                //if (lineReader == 55) {
                 
-                //  throw new Ice.BLException($"{isExists} {part.PartNum}");
-                //}
+                //var ordHed = Db.OrderHed.Where(e => e.PONum == poNum).OrderByDescending(e => e.OrderNum).FirstOrDefault();
+                //var tmpOrdNum = ordHed.OrderNum;
+                //var ordDtl = Db.OrderDtl.Where(e => e.OrderNum == tmpOrdNum && e.POLine == poItem).FirstOrDefault();
                 
-                if(!isExists && part != null){
+                var checkSO = (from header in Db.OrderHed
+                join detail in Db.OrderDtl on header.OrderNum equals detail.OrderNum
+                where header.PONum == poNum && detail.POLine == poItem
+                orderby header.OrderNum
+                select detail).FirstOrDefault();
+                
+                bool isSOExists = false;
+                if (checkSO != null) {
+                  isSOExists = true;
+                } else {
+                  isSOExists = false;
+                }
+                
+                //throw new Ice.BLException(isExists + " " + isSOExists + " " + checkSO.OrderLine);
+                if(!isExists && !isSOExists && part != null){
                   svc.GetaNewUD01(ref DataSet);
                   
                   //DataSet.UD01[idxData]["No"] = idxData + 1;
@@ -123,7 +141,9 @@ try{
                   
                   if (isExists) {
                     DataSet.UD01[idxData].ShortChar20 = "FAILED it's already been uploaded";
-                  } else {
+                  } else if (isSOExists) {
+                    DataSet.UD01[idxData].ShortChar20 = "FAILED PO has been created in Order";
+                  }else {
                     DataSet.UD01[idxData].ShortChar20 = "FAILED Part not found";
                   }
                   

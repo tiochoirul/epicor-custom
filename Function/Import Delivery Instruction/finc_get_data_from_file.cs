@@ -25,7 +25,7 @@ try{
             CallService<Ice.Contracts.UD03SvcContract>(svc => {
                 
                 DateTime diRcvDate;
-                DateTime.TryParseExact(dataSplit[16], "dd-MMM-yyyy", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out diRcvDate);
+                DateTime.TryParseExact(dataSplit[16], "dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out diRcvDate);
                 
                 string diNo = dataSplit[0];
                 string gate = dataSplit[1];

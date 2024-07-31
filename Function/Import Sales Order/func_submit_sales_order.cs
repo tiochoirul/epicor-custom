@@ -86,20 +86,21 @@ try{
           
           var ordNum = SOT.OrderHed[0].OrderNum;
           
+          int line = 0;
           foreach(var item in ListDetailTuple) {
             svc.GetNewOrderDtl(ref SOT, ordNum);
-            SOT.OrderDtl[0].PartNum = item.PartNum;
-            SOT.OrderDtl[0].LineDesc = item.LineDesc;
-            SOT.OrderDtl[0].SellingQuantity = item.SellingQuantity;
-            SOT.OrderDtl[0].DocDspUnitPrice = item.DocDspUnitPrice;
-            SOT.OrderDtl[0].OrderQty = item.SellingQuantity;
-            SOT.OrderDtl[0].DocUnitPrice = item.DocDspUnitPrice;
-            SOT.OrderDtl[0].POLine = item.POLine;
+            SOT.OrderDtl[line].PartNum = item.PartNum;
+            SOT.OrderDtl[line].LineDesc = item.LineDesc;
+            SOT.OrderDtl[line].SellingQuantity = item.SellingQuantity;
+            SOT.OrderDtl[line].DocDspUnitPrice = item.DocDspUnitPrice;
+            SOT.OrderDtl[line].OrderQty = item.SellingQuantity;
+            SOT.OrderDtl[line].DocUnitPrice = item.DocDspUnitPrice;
+            SOT.OrderDtl[line].POLine = item.POLine;
             
             svc.Update(ref SOT);
             
-            this.ThisLib.updateUD01(HeaderTuple.PONum, HeaderTuple.OrderDate, item.Reference, item.POLine, item.PartNum);
-            
+            //this.ThisLib.updateUD01(HeaderTuple.PONum, HeaderTuple.OrderDate, item.Reference, item.POLine, item.PartNum);
+            line++;
           }
           
           this.soNumOutput += HeaderTuple.PONum + "/" + ordNum + "~";
@@ -114,9 +115,11 @@ try{
     });
     txScope.Complete();
     
+    this.ThisLib.deleteUD01(this.Session.CompanyID);
     //throw new Ice.BLException($"{this.dsError.Tables[0].Rows[0][0].ToString()}");
   }
 } catch(Exception e){
-  this.responseGenerate = $"{e.Message}";
+  this.soNumOutput = "Throw Error, Rollback Transaction";
+  this.responseGenerate = $"Exception: {e.Message}";
   //throw new Ice.BLException($"{e.Message}");
 }
